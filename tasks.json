@@ -1,1 +1,18 @@
-[{"name":"Mediate","isDone":false},{"name":"Wash dishes","isDone":true},{"name":"Drink honey lemon","isDone":true},{"name":"Learn Go","isDone":false},{"name":"Cook","isDone":false},{"name":"Learn AI math","isDone":false},{"name":"Workout","isDone":true}]
+[
+  {
+    "name": "Mediate",
+    "isDone": false
+  },
+  {
+    "name": "Wash dishes",
+    "isDone": true
+  },
+  {
+    "name": "Drink milk",
+    "isDone": true
+  },
+  {
+    "name": "Learn Go",
+    "isDone": false
+  }
+]
