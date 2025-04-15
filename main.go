@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -19,8 +20,14 @@ ______________________
 `
 
 type Task struct {
-	name   string
-	isDone bool
+	Name   string `json:"name"`
+	IsDone bool   `json:"isDone"`
+}
+
+func checkErr(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
 
 func handleChooseTasks(option *int) {
@@ -48,15 +55,16 @@ func listAllTasks(taskList []Task) bool {
 		// count done tasks
 		fmt.Println("Todo List")
 		for i := range taskList {
-			if taskList[i].isDone {
-				fmt.Printf("%d. [x] %s\n", i+1, taskList[i].name)
+			if taskList[i].IsDone {
+				fmt.Printf("%d. [x] %s\n", i+1, taskList[i].Name)
 				doneTaskCount += 1
 			} else {
-				fmt.Printf("%d. [ ] %s\n", i+1, taskList[i].name)
+				fmt.Printf("%d. [ ] %s\n", i+1, taskList[i].Name)
 			}
 		}
 	}
 
+	// choose task to complete or incomplete
 	var chooseTask int
 	fmt.Printf("Choose a task to perform action (1-%d) or 0 to quit: ", len(taskList))
 	fmt.Scan(&chooseTask)
@@ -66,8 +74,10 @@ func listAllTasks(taskList []Task) bool {
 		fmt.Print("\033[H\033[2J")
 		return false
 	}
-	taskList[chooseTask-1].isDone = !taskList[chooseTask-1].isDone
-	if taskList[chooseTask-1].isDone {
+
+	// check if task is already done or not
+	taskList[chooseTask-1].IsDone = !taskList[chooseTask-1].IsDone
+	if taskList[chooseTask-1].IsDone {
 		fmt.Print("\033[H\033[2J")
 		fmt.Println("Mark task as complete")
 		doneTaskCount += 1
@@ -80,6 +90,9 @@ func listAllTasks(taskList []Task) bool {
 		fmt.Println("Mark task as incomplete")
 	}
 	fmt.Println("")
+
+	// store in file.json
+
 	return true
 }
 
@@ -87,14 +100,20 @@ func addTask(taskList *[]Task, reader *bufio.Reader) {
 	fmt.Print("Enter task name: ")
 	newTask, _ := reader.ReadString('\n')
 	newTask = strings.TrimSpace(newTask)
-	*taskList = append(*taskList, Task{name: newTask, isDone: false})
+	*taskList = append(*taskList, Task{Name: newTask, IsDone: false})
 	fmt.Print("\033[H\033[2J")
 	fmt.Println("Added task successfully!")
 	fmt.Println("")
+
+	// write to json file
+	taskJson, err := json.Marshal(*taskList)
+	checkErr(err)
+	os.WriteFile("tasks.json", taskJson, 0644)
 }
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
+
 	var option int
 	taskList := []Task{{"Mediate", false}, {"Wash dishes", false}, {"Drink honey lemon", false}}
 
