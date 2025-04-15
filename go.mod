@@ -1,3 +1,3 @@
-module go-todo-cli
+module tuido-list
 
 go 1.24.2
