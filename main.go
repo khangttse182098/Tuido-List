@@ -113,9 +113,16 @@ func addTask(taskList *[]Task, reader *bufio.Reader) {
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
 	var option int
-	taskList := []Task{{"Mediate", false}, {"Wash dishes", false}, {"Drink honey lemon", false}}
+	var taskList []Task
+
+	//read file
+	fileContent, err := os.ReadFile("tasks.json")
+	checkErr(err)
+
+	//unmarshal json to taskList
+	err = json.Unmarshal(fileContent, &taskList)
+	checkErr(err)
 
 	fmt.Println("Welcome to Terminal Todo List!")
 	for 1 == 1 {
