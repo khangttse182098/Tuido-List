@@ -92,6 +92,10 @@ func listAllTasks(taskList []Task) bool {
 	fmt.Println("")
 
 	// store in file.json
+	tasksJson, err := json.Marshal(taskList)
+	checkErr(err)
+	err = os.WriteFile("tasks.json", tasksJson, 0644)
+	checkErr(err)
 
 	return true
 }
@@ -108,7 +112,8 @@ func addTask(taskList *[]Task, reader *bufio.Reader) {
 	// write to json file
 	taskJson, err := json.Marshal(*taskList)
 	checkErr(err)
-	os.WriteFile("tasks.json", taskJson, 0644)
+	err = os.WriteFile("tasks.json", taskJson, 0644)
+	checkErr(err)
 }
 
 func main() {
