@@ -1,11 +1,10 @@
 package main
 
 import (
-	//"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
-	// "slices"
+	"slices"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -26,6 +25,25 @@ func checkErr(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func clearTerminal() {
+	fmt.Print("\033[H\033[2J")
+}
+
+func paddingTop() {
+	for range make([]int, 10) {
+		fmt.Println("")
+	}
+}
+
+func paddingLeft() string {
+	var str string
+	for range make([]int, 60) {
+		str += " "
+	}
+
+	return str
 }
 
 // ----------------------------------------------------------
@@ -90,6 +108,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			case tea.KeyEsc:
 				saveTasksToFile(m)
+				clearTerminal()
 				return m, tea.Quit
 			}
 		}
@@ -99,6 +118,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "ctrl + c", "q":
 				saveTasksToFile(m)
+				clearTerminal()
 				return m, tea.Quit
 			case "up", "k":
 				if m.cursor > 0 {
@@ -119,6 +139,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if !m.isAdd {
 					m.isAdd = true
 				}
+			case "d":
+				if len(m.TaskList) > 0 {
+					m.TaskList = slices.Delete(m.TaskList, m.cursor, m.cursor+1)
+				}
 			}
 		}
 	}
@@ -127,7 +151,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	// The header
-	s := "Todo List\n\n"
+	s := fmt.Sprintf("%sTodo List\n\n", paddingLeft())
 
 	// Iterate over our choices
 	for i, task := range m.TaskList {
@@ -145,29 +169,31 @@ func (m model) View() string {
 		}
 
 		// Render the row
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, task)
+		s += fmt.Sprintf("%s%s [%s] %s\n", paddingLeft(), cursor, checked, task)
 	}
 
 	// Is adding new task function on?
 	if m.isAdd {
-		s += fmt.Sprintf("  [ ] %s\n", m.newTaskInput)
+		s += fmt.Sprintf("  %s[ ] %s\n", paddingLeft(), m.newTaskInput)
 	}
 
 	// The footer
-	s += "\nPress q to quit.\n"
+	s += fmt.Sprintf("\n%sPress q to quit.\n", paddingLeft())
 
 	// Send the UI for rendering
 	return s
 }
 
 func saveTasksToFile(modelObj model) {
-	tasksJson, err := json.Marshal(modelObj)
+	tasksJson, err := json.MarshalIndent(modelObj, "", " ")
 	checkErr(err)
 	err = os.WriteFile("tasks.json", tasksJson, 0644)
 	checkErr(err)
 }
 
 func main() {
+	clearTerminal()
+	paddingTop()
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
