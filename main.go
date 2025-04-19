@@ -32,17 +32,9 @@ func checkErr(e error) {
 	}
 }
 
-//
-// func clearTerminal() {
-// 	fmt.Print("\033[H\033[2J")
-// }
-//
-// func saveTasksToFile(taskList []Task) {
-// 	tasksJson, err := json.MarshalIndent(taskList, "", "  ")
-// 	checkErr(err)
-// 	err = os.WriteFile("tasks.json", tasksJson, 0644)
-// 	checkErr(err)
-// }
+//	func clearTerminal() {
+//		fmt.Print("\033[H\033[2J")
+//	}
 //
 // func handleChooseTasks(option *int) {
 // 	for 1 == 1 {
@@ -237,6 +229,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl + c", "q":
+			saveTasksToFile(m)
 			return m, tea.Quit
 		case "up", "k":
 			if m.cursor > 0 {
@@ -286,6 +279,13 @@ func (m model) View() string {
 
 	// Send the UI for rendering
 	return s
+}
+
+func saveTasksToFile(modelObj model) {
+	tasksJson, err := json.Marshal(modelObj)
+	checkErr(err)
+	err = os.WriteFile("tasks.json", tasksJson, 0644)
+	checkErr(err)
 }
 
 func main() {

@@ -1,13 +1,1 @@
-{
-  "taskList": [
-    "Buy milk",
-    "Walk the dog",
-    "Do laundry",
-    "Call mom",
-    "Read a book"
-  ],
-  "selected": {
-    "0": {},
-    "3": {}
-  }
-}
+{"taskList":["Buy milk","Walk the dog","Do laundry","Call mom","Read a book"],"selected":{}}
