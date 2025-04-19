@@ -7,6 +7,8 @@ import (
 	"os"
 	"slices"
 	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 var ascii = `
@@ -192,43 +194,136 @@ func deleteTask(taskList *[]Task) bool {
 	return true
 }
 
-func main() {
-	reader := bufio.NewReader(os.Stdin)
-	var option int
-	var taskList []Task
+// ----------------------------------------------------------
 
+type model struct {
+	TaskList []string         `json:"taskList"`
+	Selected map[int]struct{} `json:"selected"`
+	cursor   int
+}
+
+func initialModel() model {
+	var modelObj model
 	//read file
-	fileContent, err := os.ReadFile("tasks.json")
-	if err == nil {
+	if fileContent, err := os.ReadFile("tasks.json"); err == nil {
 		//unmarshal json to taskList
-		err = json.Unmarshal(fileContent, &taskList)
-		checkErr(err)
-	}
-
-	fmt.Println("Welcome to Terminal Todo List!")
-	for 1 == 1 {
-		// prompt the user to choose task
-		handleChooseTasks(&option)
-
-		// list out all tasks
-		if option == 1 {
-			if !listAllTasks(taskList) {
-				continue
+		trimmedData := strings.TrimSpace(string(fileContent))
+		if len(trimmedData) == 0 {
+			modelObj = model{
+				TaskList: []string{},
+				Selected: make(map[int]struct{}),
 			}
-		} else if option == 2 {
-			addTask(&taskList, reader)
-
-		} else if option == 3 {
-			if !updateTask(&taskList, reader) {
-				continue
-			}
-		} else if option == 4 {
-			if !deleteTask(&taskList) {
-				continue
-			}
-		} else if option == 5 {
-			fmt.Println("Bye byeee!")
-			break
+		} else {
+			err = json.Unmarshal(fileContent, &modelObj)
+			checkErr(err)
 		}
 	}
+	return modelObj
+}
+
+func (m model) Init() tea.Cmd {
+	return nil
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl + c", "q":
+			return m, tea.Quit
+		case "up", "k":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down", "j":
+			if m.cursor < len(m.TaskList)-1 {
+				m.cursor++
+			}
+		case "enter", " ":
+			_, ok := m.Selected[m.cursor]
+			if ok {
+				delete(m.Selected, m.cursor)
+			} else {
+				m.Selected[m.cursor] = struct{}{}
+			}
+		}
+	}
+	return m, nil
+}
+
+func (m model) View() string {
+	// The header
+	s := "Todo List\n\n"
+
+	// Iterate over our choices
+	for i, task := range m.TaskList {
+
+		// Is the cursor pointing at this choice?
+		cursor := " " // no cursor
+		if m.cursor == i {
+			cursor = ">" // cursor!
+		}
+
+		// Is this choice selected?
+		checked := " " // not selected
+		if _, ok := m.Selected[i]; ok {
+			checked = "x" // selected!
+		}
+
+		// Render the row
+		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, task)
+	}
+
+	// The footer
+	s += "\nPress q to quit.\n"
+
+	// Send the UI for rendering
+	return s
+}
+
+func main() {
+	p := tea.NewProgram(initialModel())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
+
+	// reader := bufio.NewReader(os.Stdin)
+	// var option int
+	// var taskList []Task
+	//
+	// //read file
+	// fileContent, err := os.ReadFile("tasks.json")
+	// if err == nil {
+	// 	//unmarshal json to taskList
+	// 	err = json.Unmarshal(fileContent, &taskList)
+	// 	checkErr(err)
+	// }
+	//
+	// fmt.Println("Welcome to Terminal Todo List!")
+	// for 1 == 1 {
+	// 	// prompt the user to choose task
+	// 	handleChooseTasks(&option)
+	//
+	// 	// list out all tasks
+	// 	if option == 1 {
+	// 		if !listAllTasks(taskList) {
+	// 			continue
+	// 		}
+	// 	} else if option == 2 {
+	// 		addTask(&taskList, reader)
+	//
+	// 	} else if option == 3 {
+	// 		if !updateTask(&taskList, reader) {
+	// 			continue
+	// 		}
+	// 	} else if option == 4 {
+	// 		if !deleteTask(&taskList) {
+	// 			continue
+	// 		}
+	// 	} else if option == 5 {
+	// 		fmt.Println("Bye byeee!")
+	// 		break
+	// 	}
+	// }
 }

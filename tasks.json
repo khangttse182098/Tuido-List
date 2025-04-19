@@ -1,18 +1,13 @@
-[
-  {
-    "name": "Mediate",
-    "isDone": false
-  },
-  {
-    "name": "Wash dishes",
-    "isDone": true
-  },
-  {
-    "name": "Drink milk",
-    "isDone": true
-  },
-  {
-    "name": "Learn Go",
-    "isDone": false
+{
+  "taskList": [
+    "Buy milk",
+    "Walk the dog",
+    "Do laundry",
+    "Call mom",
+    "Read a book"
+  ],
+  "selected": {
+    "0": {},
+    "3": {}
   }
-]
+}
