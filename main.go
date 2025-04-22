@@ -11,17 +11,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var ascii = `
-______________________
-| Yayy you've finnish |
-| all the tasks!!!    |
-|_____________________|
- \/
-   /\___/\
-  ( U w U )
-    > ^ <
-`
-
 func checkErr(e error) {
 	if e != nil {
 		panic(e)
@@ -138,10 +127,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var taskStyle = lipgloss.NewStyle()
+	var borderStyle = lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		Width(50)
+	var taskStyle lipgloss.Style
+	var centerStyle = lipgloss.NewStyle().
+		Width(140).
+		MarginTop(10).
+		Align(lipgloss.Center)
+	var titleStyle = lipgloss.NewStyle().
+		Background(lipgloss.Color("#7c6f64")).
+		Foreground(lipgloss.Color("#45403d")).
+		Bold(true).
+		Width(50).
+		Align(lipgloss.Center)
 
 	// The header
-	s := fmt.Sprintf("Todo List\n\n")
+	s := titleStyle.Render(fmt.Sprintf("Todo List")) + "\n\n"
 
 	// Iterate over our choices
 	for i, task := range m.TaskList {
@@ -177,8 +179,8 @@ func (m model) View() string {
 	// The footer
 	s += fmt.Sprintf("\nPress q to quit.\n")
 
-	// Send the UI for rendering
-	return s
+	// Send the UI for renderin
+	return centerStyle.Render(borderStyle.Render(s))
 }
 
 func saveTasksToFile(modelObj model) {
