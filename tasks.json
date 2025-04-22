@@ -5,11 +5,7 @@
   "Do laundry",
   "Call mom",
   "Learn JavaScript",
-  "Learn Go",
-  "Learn Java"
+  "Learn Go"
  ],
- "selected": {
-  "1": {},
-  "6": {}
- }
+ "selected": {}
 }

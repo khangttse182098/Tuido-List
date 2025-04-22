@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 var ascii = `
@@ -29,21 +30,6 @@ func checkErr(e error) {
 
 func clearTerminal() {
 	fmt.Print("\033[H\033[2J")
-}
-
-func paddingTop() {
-	for range make([]int, 10) {
-		fmt.Println("")
-	}
-}
-
-func paddingLeft() string {
-	var str string
-	for range make([]int, 60) {
-		str += " "
-	}
-
-	return str
 }
 
 // ----------------------------------------------------------
@@ -138,10 +124,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "o":
 				if !m.isAdd {
 					m.isAdd = true
+					m.cursor = len(m.TaskList)
 				}
 			case "d":
 				if len(m.TaskList) > 0 {
 					m.TaskList = slices.Delete(m.TaskList, m.cursor, m.cursor+1)
+					m.cursor--
 				}
 			}
 		}
@@ -150,16 +138,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	var taskStyle = lipgloss.NewStyle()
+
 	// The header
-	s := fmt.Sprintf("%sTodo List\n\n", paddingLeft())
+	s := fmt.Sprintf("Todo List\n\n")
 
 	// Iterate over our choices
 	for i, task := range m.TaskList {
-
+		// style for selected task
+		taskStyle = lipgloss.NewStyle()
 		// Is the cursor pointing at this choice?
 		cursor := " " // no cursor
 		if m.cursor == i {
 			cursor = ">" // cursor!
+			taskStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("#e78a4e"))
 		}
 
 		// Is this choice selected?
@@ -169,16 +163,19 @@ func (m model) View() string {
 		}
 
 		// Render the row
-		s += fmt.Sprintf("%s%s [%s] %s\n", paddingLeft(), cursor, checked, task)
+		s += taskStyle.Render(fmt.Sprintf("%s [%s] %s", cursor, checked, task)) + "\n"
 	}
 
 	// Is adding new task function on?
 	if m.isAdd {
-		s += fmt.Sprintf("  %s[ ] %s\n", paddingLeft(), m.newTaskInput)
+		taskStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("#e78a4e"))
+		s += taskStyle.Render(fmt.Sprintf("> [ ] %s", m.newTaskInput)) + "\n"
 	}
 
 	// The footer
-	s += fmt.Sprintf("\n%sPress q to quit.\n", paddingLeft())
+	s += fmt.Sprintf("\nPress q to quit.\n")
 
 	// Send the UI for rendering
 	return s
@@ -193,7 +190,6 @@ func saveTasksToFile(modelObj model) {
 
 func main() {
 	clearTerminal()
-	paddingTop()
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
