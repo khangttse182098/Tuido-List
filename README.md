@@ -1,7 +1,7 @@
 # Tuido List
-A toy project to help me learn Go and create a TUI app in the process lol
+A toy project to help me learn Go and create a TUI app in the process
 
-<img src="./tuidol-list-current.png" width="500" height="300">
+<img src="./tuido-list-current.png" width="500" height="300">
 
 # Current functionalities
 - View todo list
@@ -9,4 +9,4 @@ A toy project to help me learn Go and create a TUI app in the process lol
 
 # Library
 - Bubbletea
-- Lipgloss (coming soon)
+- Lipgloss
